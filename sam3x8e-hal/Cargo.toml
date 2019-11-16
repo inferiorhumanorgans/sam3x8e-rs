@@ -1,0 +1,36 @@
+[package]
+name = "sam3x8e-hal"
+version = "0.1.0"
+authors = ["Alex Zepeda <alex@inferiorhumanorgans.com>"]
+edition = "2018"
+
+[dependencies]
+cortex-m = "0.6.0"
+embedded-hal = "0.2.0"
+nb = "0.1.2"
+sam3x8e = { path = "../sam3x8e" }
+sam3x8e-hal-codegen = { path = "../sam3x8e-hal-codegen" }
+void = { version = "1.0.2", default-features = false }
+cortex-m-rt = "0.6.10"
+
+[dev-dependencies]
+panic-halt = "0.2.0"
+cortex-m = "0.6.0"
+cortex-m-semihosting = "0.3.3"
+
+[features]
+default = ["unproven", "sam3x", "rt", "arduino-due"]
+unproven = ["embedded-hal/unproven"]
+rt = ["sam3x8e/rt"]
+
+arduino-due = ["xtal-12mhz"]
+macchina-m2 = ["xtal-12mhz"]
+xtal-12mhz = []
+
+# e.g. SAM3x8e from the Arduino Due
+sam3x   = []
+
+sam3a   = []
+
+# Sample board available from Atmel
+sam38h   = []
