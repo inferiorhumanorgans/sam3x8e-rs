@@ -16,8 +16,8 @@
  */
 
 mod pin;
-mod pio_set;
 mod pio;
+mod pio_set;
 
 pub use pin::*;
 pub use pio::*;

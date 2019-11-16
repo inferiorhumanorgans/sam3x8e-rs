@@ -18,12 +18,13 @@
 #![feature(proc_macro_span)]
 #![feature(proc_macro_diagnostic)]
 
-#[macro_use] extern crate syn;
-#[macro_use] extern crate quote;
+#[macro_use]
+extern crate syn;
+#[macro_use]
+extern crate quote;
 
-extern crate proc_macro;
 extern crate inflector;
-
+extern crate proc_macro;
 
 mod pio;
 
@@ -35,5 +36,6 @@ pub fn gpio(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     quote!(
         #pio
-    ).into()
+    )
+    .into()
 }

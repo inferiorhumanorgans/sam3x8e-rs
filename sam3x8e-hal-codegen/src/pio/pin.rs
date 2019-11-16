@@ -15,9 +15,9 @@
  *    along with sam3x8e-hal.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use syn::Ident;
-use quote::ToTokens;
 use proc_macro2::TokenStream;
+use quote::ToTokens;
+use syn::Ident;
 
 use crate::inflector::Inflector;
 

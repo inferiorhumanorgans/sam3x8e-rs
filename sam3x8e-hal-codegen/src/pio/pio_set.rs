@@ -15,9 +15,14 @@
  *    along with sam3x8e-hal-codegen.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use syn::{Ident, parse::{Parse, ParseStream, Result}, punctuated::Punctuated, token::Comma};
-use quote::ToTokens;
 use proc_macro2::TokenStream;
+use quote::ToTokens;
+use syn::{
+    parse::{Parse, ParseStream, Result},
+    punctuated::Punctuated,
+    token::Comma,
+    Ident,
+};
 
 use inflector::Inflector;
 
@@ -29,20 +34,21 @@ pub struct PioSet {
 
 impl Parse for PioSet {
     fn parse(input: ParseStream) -> Result<Self> {
-        let punctuated : Punctuated<Pio, Comma> = input.parse_terminated(Pio::parse)?;
+        let punctuated: Punctuated<Pio, Comma> = input.parse_terminated(Pio::parse)?;
 
         let pio = punctuated.into_iter().collect();
 
-        Ok( PioSet {
-            pio
-        })
-    }    
+        Ok(PioSet { pio })
+    }
 }
-
 
 impl ToTokens for PioSet {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let upper_names : Vec<Ident> = self.pio.iter().map(|p| format_ident!("PIO{}", p.name.to_string().to_screaming_snake_case())).collect();
+        let upper_names: Vec<Ident> = self
+            .pio
+            .iter()
+            .map(|p| format_ident!("PIO{}", p.name.to_string().to_screaming_snake_case()))
+            .collect();
 
         // Generate use statement
         tokens.extend(quote!(use crate::pac::{#(#upper_names),*};));

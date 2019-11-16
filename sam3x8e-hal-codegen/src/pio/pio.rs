@@ -15,9 +15,14 @@
  *    along with sam3x8e-hal-codegen.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use syn::{LitInt, Ident, parse::{Parse, ParseStream, Result}, punctuated::Punctuated, token::Comma};
-use quote::ToTokens;
 use proc_macro2::TokenStream;
+use quote::ToTokens;
+use syn::{
+    parse::{Parse, ParseStream, Result},
+    punctuated::Punctuated,
+    token::Comma,
+    Ident, LitInt,
+};
 
 use inflector::Inflector;
 
@@ -47,7 +52,7 @@ impl Parse for Pio {
 
         loop {
             if value.is_empty() {
-                break
+                break;
             }
 
             let lookahead = value.lookahead1();
@@ -59,15 +64,14 @@ impl Parse for Pio {
                 let inner;
                 bracketed!(inner in value);
 
-                let punctuated : Punctuated<LitInt, Comma> = inner.parse_terminated(LitInt::parse)?;
+                let punctuated: Punctuated<LitInt, Comma> =
+                    inner.parse_terminated(LitInt::parse)?;
 
                 pins = Some(
                     punctuated
                         .into_iter()
-                        .map(|elem|
-                            elem.base10_parse::<u8>().unwrap()
-                        )
-                        .collect()
+                        .map(|elem| elem.base10_parse::<u8>().unwrap())
+                        .collect(),
                 );
             } else if lookahead.peek(kw::id) {
                 value.parse::<kw::id>()?;
@@ -75,11 +79,11 @@ impl Parse for Pio {
                 let literal = value.parse::<LitInt>()?;
                 id = Some(literal.base10_parse()?);
             } else {
-                return Err(lookahead.error())
+                return Err(lookahead.error());
             }
 
             if value.is_empty() {
-                break
+                break;
             }
 
             value.parse::<Token![,]>()?;
@@ -88,11 +92,7 @@ impl Parse for Pio {
         let id = id.unwrap();
         let pins = pins.unwrap();
 
-        Ok(Pio {
-            name,
-            id,
-            pins,
-        })
+        Ok(Pio { name, id, pins })
     }
 }
 
@@ -106,9 +106,20 @@ impl<'a> ToTokens for Pio {
         let upper_name = format_ident!("PIO{}", upper_ident);
         let pio_partial_erase = format_ident!("P{}x", upper_ident);
 
-        let pins = self.pins.iter().map(|pin| Pin { pio: &index, index: *pin});
-        let upper_pin_idents : Vec<Ident> = self.pins.iter().map(|pin| format_ident!("P{}{}", upper_ident, pin)).collect();
-        let lower_pin_idents : Vec<Ident> = self.pins.iter().map(|pin| format_ident!("p{}{}", lower_ident, pin)).collect();
+        let pins = self.pins.iter().map(|pin| Pin {
+            pio: &index,
+            index: *pin,
+        });
+        let upper_pin_idents: Vec<Ident> = self
+            .pins
+            .iter()
+            .map(|pin| format_ident!("P{}{}", upper_ident, pin))
+            .collect();
+        let lower_pin_idents: Vec<Ident> = self
+            .pins
+            .iter()
+            .map(|pin| format_ident!("p{}{}", lower_ident, pin))
+            .collect();
 
         // Peripheral magic number Datasheet §9.1
         let pio_clock = format_ident!("pid{}", self.id);
