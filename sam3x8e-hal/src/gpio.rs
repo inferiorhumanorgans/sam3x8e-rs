@@ -1,3 +1,20 @@
+/*
+ *    This file (src/gpio.rs) is part of sam3x8e-hal.
+ *
+ *    sam3x8e-hal is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU Lesser General Public License as published
+ *    by the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    sam3x8e-hal is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public License
+ *    along with sam3x8e-hal.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #[cfg(feature = "unproven")]
 use crate::hal::digital::v2::InputPin;
 use crate::hal::digital::v2::OutputPin;
@@ -15,26 +32,26 @@ pub trait GpioExt {
     fn split(self, pmc: &mut Pmc) -> Self::Parts;
 }
 
-/// Input mode (type state)
+/// Input mode
 pub struct Input<MODE> {
     _mode: PhantomData<MODE>,
 }
 
-/// Floating input (type state)
+/// Floating input
 pub struct Floating;
-/// Pulled down input (type state)
+/// Pulled down input
 pub struct PullDown;
-/// Pulled up input (type state)
+/// Pulled up input
 pub struct PullUp;
 
-/// Output mode (type state)
+/// Output mode
 pub struct Output<MODE> {
     _mode: PhantomData<MODE>,
 }
 
-/// Push pull output (type state)
+/// Push pull output
 pub struct PushPull;
-/// Open drain output (type state)
+/// Open drain output
 pub struct OpenDrain;
 
 pub struct PeripheralA;
@@ -58,6 +75,8 @@ gpio! {
     },
     D: {
         id: 14,
+        // The datasheet appears to indicate that PIOD only has 10 pins on the SAM3x models, but
+        // the Macchina M2 definitely has at least 11 pins.
         pins: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     },
 }

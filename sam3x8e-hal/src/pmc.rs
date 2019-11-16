@@ -1,3 +1,20 @@
+/*
+ *    This file (src/pmc.rs) is part of sam3x8e-hal.
+ *
+ *    sam3x8e-hal is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU Lesser General Public License as published
+ *    by the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    sam3x8e-hal is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public License
+ *    along with sam3x8e-hal.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 use crate::time::*;
 use crate::pac::PMC;
 
@@ -8,6 +25,9 @@ pub enum RcOscillatorSpeed {
     Speed12Mhz,
 }
 
+/// The xtal oscillator is an external device and can be any frequency
+/// between 3 and 20 MHz.  However there are many assumptions baked into
+/// having xtal run at 12 MHz.
 #[cfg(feature = "xtal-12mhz")]
 pub const XTAL_SPEED : MegaHertz = MegaHertz(12);
 
@@ -59,21 +79,22 @@ pub enum MasterClockSrc {
 
 pub enum ProcessorClockPrescaler {
     Clk,
-    Clk2,   // Clk / 2
-    Clk3,   // Clk / 3
-    Clk4,   // Clk / 4
-    Clk8,   // Clk / 8
-    Clk16,  // Clk / 16
-    Clk32,  // Clk / 32
-    Clk64,  // Clk / 64
+    Clk2,   // Master clock / 2
+    Clk3,   // Master clock / 3
+    Clk4,   // Master clock / 4
+    Clk8,   // Master clock / 8
+    Clk16,  // Master clock / 16
+    Clk32,  // Master clock / 32
+    Clk64,  // Master clock / 64
 }
 
+/// PLL divisor
 pub enum PllDivMode {
     DividedBy1,
     DividedBy2,
 }
 
-/// Clocks configutation
+/// Clock configutation runtime constants
 pub struct Config {
     css: MasterClockSrc,
     pres: ProcessorClockPrescaler,
@@ -81,6 +102,7 @@ pub struct Config {
     upll_div2: PllDivMode,
 }
 
+// This is not how the board comes up by default
 impl Default for Config {
     fn default() -> Config {
         Config {
@@ -93,26 +115,31 @@ impl Default for Config {
 }
 
 impl Config {
+    /// Returns the master clock source
     pub fn master_clock(mut self, css: MasterClockSrc) -> Self {
         self.css = css;
         self
     }
 
+    /// Returns the processor prescaler divisor
     pub fn prescaler(mut self, pres: ProcessorClockPrescaler) -> Self {
         self.pres = pres;
         self
     }
 
+    /// Configures the PLLA (general purpose PLL) divisor
     pub fn plla_div(mut self, plla_div2: PllDivMode) -> Self {
         self.plla_div2 = plla_div2;
         self
     }
 
+    /// Configures the UPLL (USB PLL) divisor
     pub fn upll_div(mut self, upll_div2: PllDivMode) -> Self {
         self.upll_div2 = upll_div2;
         self
     }
 
+    /// Generates a clock config with PLLA as the source
     pub fn pll(pll_src: MainOscillator, pll_div: DivA, pll_mull: MullA) -> Config {
         Config {
             css: MasterClockSrc::Pll(pll_src, pll_div, pll_mull),
@@ -122,6 +149,7 @@ impl Config {
         }
     }
 
+    /// Generates a clock config with the main clock as the source
     pub fn main_clock(oscillator: MainOscillator) -> Config {
         Config {
             css: MasterClockSrc::MainClock(oscillator),
@@ -131,7 +159,7 @@ impl Config {
         }
     }
 
-    /// Roughly 32 KHz
+    /// Generates a clock config with the slow clock as the source.  Roughly 32 KHz.
     pub fn slow_clock() -> Config {
         Config {
             css: MasterClockSrc::SlowClock,
@@ -142,7 +170,9 @@ impl Config {
     }
 
     #[cfg(feature = "xtal-12mhz")]
-    /// 84 MHz config, essentially top speed
+    /// Generates a clock config with PLLA as the source and a processor clock speed of 84 MHz.
+    /// This is essentially the maximum stable speed for a SAM3x8e that also allows for useful
+    /// USART and USB I/O.
     pub fn hclk_84mhz() -> Config {
         Config {
             css: MasterClockSrc::Pll(MainOscillator::XtalOscillator, DivA::Bypassed, MullA::Activated(13)),
@@ -155,20 +185,22 @@ impl Config {
 
 /// Frozen clock frequencies
 ///
-/// The existence of this value indicates that the clock configuration can no longer be changed
+/// The existence of this value indicates that the clock configuration can (should) no longer be changed
 #[derive(Clone, Copy)]
 pub struct Clocks {
     source: MasterClockSrc,
 
     processor_clock: Hertz, // HCLK
-    master_clock: Hertz, // MCK
+    master_clock: Hertz,    // MCK
 }
 
 impl Clocks {
+    /// Returns the master clock (MCK) speed in hertz
     pub fn master_clk(&self) -> Hertz {
         self.master_clock
     }
 
+    /// Returns the processor clock (HCLK) speed in hertz
     pub fn processor_clk(&self) -> Hertz {
         self.processor_clock
     }
