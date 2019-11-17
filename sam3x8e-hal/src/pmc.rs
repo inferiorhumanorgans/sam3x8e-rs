@@ -496,7 +496,7 @@ impl PmcExt for PMC {
                                 .moscxten().set_bit()
                                 .moscsel().set_bit()
                             },
-                            MainOscillator::FastRcOscillator(rc_speed) => {
+                            MainOscillator::FastRcOscillator(_rc_speed) => {
                                 w
                                     .moscsel().clear_bit()
                                     .moscrcen().set_bit()

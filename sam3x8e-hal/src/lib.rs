@@ -37,6 +37,8 @@
 //! [cortex-m-quickstart]: https://docs.rs/cortex-m-quickstart/~0.3
 //!
 
+#![deny(warnings)]
+
 #[macro_use]
 extern crate sam3x8e_hal_codegen;
 

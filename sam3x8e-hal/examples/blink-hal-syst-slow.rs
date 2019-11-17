@@ -15,6 +15,9 @@
  *    along with sam3x8e-hal.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#![deny(warnings)]
+#![deny(unsafe_code)]
+
 #![no_std]
 #![no_main]
 
