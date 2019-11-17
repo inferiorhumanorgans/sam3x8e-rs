@@ -15,6 +15,9 @@
  *    along with sam3x8e-hal.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#![deny(warnings)]
+#![deny(unsafe_code)]
+
 #![no_std]
 #![no_main]
 
@@ -86,7 +89,7 @@ fn SysTick() {
     static mut STATE: bool = false;
 
     cortex_m::interrupt::free(|cs| {
-        if let Some(ref mut timer) = TIMER.borrow(cs).borrow_mut().deref_mut() {
+        if let Some(ref mut _timer) = TIMER.borrow(cs).borrow_mut().deref_mut() {
             // Change the LED state on each exception.
             if let Some(ref mut led) = LED.borrow(cs).borrow_mut().deref_mut() {
                 if *STATE {
