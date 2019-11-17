@@ -26,7 +26,7 @@ extern crate embedded_hal;
 extern crate cortex_m_rt;
 
 use cortex_m_rt::entry;
-use sam3x8e_hal::{pac::self, prelude::*, pmc::{MainOscillator, ProcessorClockPrescaler, DivA, MullA, Config}};
+use sam3x8e_hal::{pac::self, prelude::*, pmc::{MainOscillator, ProcessorClockPrescaler, DivA, MulA, Config}};
 
 /// blink-hal-syst-pll-42mhz is a example program that will toggle PA15 roughly
 /// every second using the HAL interfaces. The delay function uses the standard
@@ -58,7 +58,7 @@ fn main() -> ! {
         Config::pll(
             MainOscillator::XtalOscillator,
             DivA::Bypassed,
-            MullA::Activated(13)
+            MulA::Activated(13)
         )
         .prescaler(ProcessorClockPrescaler::Clk4)
     );

@@ -54,7 +54,7 @@ pub enum DivA {
 }
 
 #[derive(Clone, Copy)]
-pub enum MullA {
+pub enum MulA {
     Deactivated,    // 0
     Activated(u16), // 11 bits wide (1-2047)
 }
@@ -74,7 +74,7 @@ pub enum MasterClockSrc {
 
     /// PLLACK is the output of the Divider and 96 to 192 MHz programmable
     /// PLL (PLLA).
-    Pll(MainOscillator, DivA, MullA),
+    Pll(MainOscillator, DivA, MulA),
 }
 
 pub enum ProcessorClockPrescaler {
@@ -140,9 +140,9 @@ impl Config {
     }
 
     /// Generates a clock config with PLLA as the source
-    pub fn pll(pll_src: MainOscillator, pll_div: DivA, pll_mull: MullA) -> Config {
+    pub fn pll(pll_src: MainOscillator, pll_div: DivA, pll_mul: MulA) -> Config {
         Config {
-            css: MasterClockSrc::Pll(pll_src, pll_div, pll_mull),
+            css: MasterClockSrc::Pll(pll_src, pll_div, pll_mul),
             pres: ProcessorClockPrescaler::Clk,
             plla_div2: PllDivMode::DividedBy1,
             upll_div2: PllDivMode::DividedBy1,
@@ -175,7 +175,7 @@ impl Config {
     /// USART and USB I/O.
     pub fn hclk_84mhz() -> Config {
         Config {
-            css: MasterClockSrc::Pll(MainOscillator::XtalOscillator, DivA::Bypassed, MullA::Activated(13)),
+            css: MasterClockSrc::Pll(MainOscillator::XtalOscillator, DivA::Bypassed, MulA::Activated(13)),
             pres: ProcessorClockPrescaler::Clk2,
             plla_div2: PllDivMode::DividedBy1,
             upll_div2: PllDivMode::DividedBy1,
@@ -393,7 +393,7 @@ fn set_clock(pmc: &PMC, cfg: &Config) {
 }
 
 #[inline(always)]
-fn configure_pll_a(pmc: &PMC, div_a: DivA, mul_a: MullA) {
+fn configure_pll_a(pmc: &PMC, div_a: DivA, mul_a: MulA) {
     pmc.ckgr_pllar.write(|w| {
         unsafe {
             let w = match div_a {
@@ -403,8 +403,8 @@ fn configure_pll_a(pmc: &PMC, div_a: DivA, mul_a: MullA) {
             };
 
             let w = match mul_a {
-                MullA::Deactivated => w.mula().bits(0),
-                MullA::Activated(m) => w.mula().bits(m),
+                MulA::Deactivated => w.mula().bits(0),
+                MulA::Activated(m) => w.mula().bits(m),
             };
 
             w
@@ -420,7 +420,7 @@ fn configure_pll_a(pmc: &PMC, div_a: DivA, mul_a: MullA) {
 impl PmcExt for PMC {
     fn freeze(self, cfg: Config) -> Pmc {
         match cfg.css {
-            MasterClockSrc::Pll(oscillator, div_a, mull_a) => {
+            MasterClockSrc::Pll(oscillator, div_a, mul_a) => {
                 match oscillator {
                     MainOscillator::XtalOscillator => {
                         // Initialize main oscillator
@@ -471,7 +471,7 @@ impl PmcExt for PMC {
                             while !self.pmc_sr.read().mckrdy().bit_is_set() {}
                         }
 
-                        configure_pll_a(&self, div_a, mull_a); 
+                        configure_pll_a(&self, div_a, mul_a);
                        
                         set_prescaler(&self, &cfg);
                         set_clock(&self, &cfg);
@@ -548,7 +548,7 @@ impl PmcExt for PMC {
 
         let master_clock : Hertz = match cfg.css {
             MasterClockSrc::SlowClock => SLOW_CLOCK_SPEED.into(),
-            MasterClockSrc::Pll(oscillator, div_a, mull_a) => {
+            MasterClockSrc::Pll(oscillator, div_a, mul_a) => {
                 let oscillator_speed : Hertz = match oscillator {
                     MainOscillator::XtalOscillator => {
                         XTAL_SPEED.into()
@@ -561,11 +561,11 @@ impl PmcExt for PMC {
                         }
                     },
                 };
-                match (div_a, mull_a) {
+                match (div_a, mul_a) {
                     (DivA::Zero, _) => 0.hz(),
-                    (_, MullA::Deactivated) => 0.hz(),
-                    (DivA::Bypassed, MullA::Activated(m)) => (oscillator_speed.0 * (m as u32 + 1)).hz(),
-                    (DivA::Output(d), MullA::Activated(m)) => (oscillator_speed.0 * (m as u32 + 1) / d as u32).hz(),
+                    (_, MulA::Deactivated) => 0.hz(),
+                    (DivA::Bypassed, MulA::Activated(m)) => (oscillator_speed.0 * (m as u32 + 1)).hz(),
+                    (DivA::Output(d), MulA::Activated(m)) => (oscillator_speed.0 * (m as u32 + 1) / d as u32).hz(),
                 }
             },
             MasterClockSrc::MainClock(oscillator) => {
