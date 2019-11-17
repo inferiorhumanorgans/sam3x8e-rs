@@ -49,6 +49,7 @@ extern crate void;
 pub use sam3x8e as pac;
 
 pub mod delay;
+pub mod efc;
 pub mod gpio;
 pub mod prelude;
 pub mod rng;

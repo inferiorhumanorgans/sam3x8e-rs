@@ -21,34 +21,19 @@
 extern crate panic_halt;
 extern crate embedded_hal;
 extern crate cortex_m_rt;
-use cortex_m_rt::entry;
 
+use cortex_m_rt::entry;
 use sam3x8e_hal::{pac::self, prelude::*, pmc::Config};
 
-fn flash_init(p: &sam3x8e::Peripherals) {
-    // TODO: Set FWS (flash wait state) according to clock configuration
-    {
-        let efc = &p.EFC0;
-        let fmr = &efc.fmr;
-        fmr.write(|w| unsafe { w.fws().bits(4) });
-    }
-
-    {
-        let efc = &p.EFC1;
-        let fmr = &efc.fmr;
-        fmr.write(|w| unsafe { w.fws().bits(4) });
-    }
-}
-
 /// blink-hal-syst-pll-84mhz is a example program that will toggle PA15 roughly
-/// every second using the HAL interfaces. The timer is based off of the
-/// standard ARM SysTick clock.
+/// every second using the HAL interfaces. The delay function uses the standard
+/// ARM SysTick clock.
 ///
-/// On a Macchina M2 board PA15 corresponds to one of the yellow LEDs.  The
+/// On a Macchina M2 board PC25 corresponds to one of the blue LEDs.  The
 /// pinout on an Arduino Due will vary.
 ///
 /// This example configures the main processor to run at half the speed of the
-/// 'A' PLL.  The PLL is configred to run off the xtal oscillator which is
+/// 'A' PLL.  The PLL is configured to run off the xtal oscillator which is
 /// almost always a 12 MHz oscillator.  The end result is a processor clock
 /// speed of 84 MHz.
 #[entry]
@@ -56,7 +41,10 @@ fn main() -> ! {
     let p = pac::Peripherals::take().unwrap();
     let cp = cortex_m::Peripherals::take().unwrap();
 
-    flash_init(&p);
+    // Flash needs to be setup before the clocks
+    // let's just go with 4 to be safe even at higher clock speeds.
+    p.EFC0.freeze(EfcConfig::new());
+    p.EFC1.freeze(EfcConfig::new());
 
     let mut pmc = p.PMC.freeze(Config::hclk_84mhz());
 

@@ -18,33 +18,21 @@
 #![no_std]
 #![no_main]
 
-extern crate panic_halt; // you can put a breakpoint on `rust_begin_unwind` to catch panics
+extern crate panic_halt;
 extern crate embedded_hal;
 extern crate cortex_m_rt;
+
 use cortex_m_rt::entry;
-
 use sam3x8e_hal::{pac, prelude::*, pmc::Config, pmc::PeripheralClock};
-
-fn flash_init(p: &sam3x8e::Peripherals) {
-    // TODO: Set FWS (flash wait state) according to clock configuration
-    {
-        let efc = &p.EFC0;
-        let fmr = &efc.fmr;
-        fmr.write(|w| unsafe { w.fws().bits(4) });
-    }
-
-    {
-        let efc = &p.EFC1;
-        let fmr = &efc.fmr;
-        fmr.write(|w| unsafe { w.fws().bits(4) });
-    }
-}
 
 #[entry]
 fn main() -> ! {
     let p = pac::Peripherals::take().unwrap();
 
-    flash_init(&p);
+    // Flash needs to be setup before the clocks
+    // let's just go with 4 to be safe even at higher clock speeds.
+    p.EFC0.freeze(EfcConfig::new());
+    p.EFC1.freeze(EfcConfig::new());
 
     let mut pmc = p.PMC.freeze(Config::hclk_84mhz());
 

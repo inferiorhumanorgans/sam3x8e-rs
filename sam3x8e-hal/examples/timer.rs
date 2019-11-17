@@ -27,17 +27,32 @@ use core::cell::RefCell;
 use core::ops::DerefMut;
 
 use cortex_m::interrupt::Mutex;
-use cortex_m::asm;
+use cortex_m::{asm, peripheral::SYST};
 use cortex_m_rt::{entry, exception};
-use sam3x8e_hal::{pac::{self, SYST}, gpio::*, prelude::*, timer::Timer, pmc::{Config, PeripheralClock}};
+use sam3x8e_hal::{pac, gpio::*, prelude::*, timer::Timer, pmc::Config};
 
 static LED: Mutex<RefCell<Option<pioa::PA5<Output<PushPull>>>>> = Mutex::new(RefCell::new(None));
 static TIMER: Mutex<RefCell<Option<Timer<SYST>>>> = Mutex::new(RefCell::new(None));
 
+/// timer is a example program that will toggle PA5 roughly every second using
+/// the HAL interfaces. The timer in this case uses the standard ARM SysTick clock.
+///
+/// On a Macchina M2 board PA5 corresponds to one of the yellow LEDs.  The
+/// pinout on an Arduino Due will vary.
+///
+/// This example configures the main processor to run at half the speed of the
+/// 'A' PLL.  The PLL is configured to run off the xtal oscillator which is
+/// almost always a 12 MHz oscillator.  The end result is a processor clock
+/// speed of 84 MHz.
 #[entry]
 fn main() -> ! {
     let p = pac::Peripherals::take().unwrap();
     let cp = cortex_m::Peripherals::take().unwrap();
+
+    // Flash needs to be setup before the clocks
+    // let's just go with 4 to be safe even at higher clock speeds.
+    p.EFC0.freeze(EfcConfig::new());
+    p.EFC1.freeze(EfcConfig::new());
 
     let mut pmc = p.PMC.freeze(Config::hclk_84mhz());
 
