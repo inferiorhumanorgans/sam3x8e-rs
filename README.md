@@ -29,3 +29,14 @@ What's the catch?
 ---
 
 There's no catch.  All code is available freely under the GNU Lesser GPL version 3.0 or later.
+
+How do I get started?
+---
+
+The [`cortex-m-quickstart`](https://github.com/rust-embedded/cortex-m-quickstart) template is a good place to start.  For a SAM3X8E microcontroller, the correct architecture is `thumbv7m-none-eabi` as this is a Cortex M3 based MCU.  The linker script at the root of this crate should work.
+
+Deployment is typically going to involve some board specific actions.  For instance the Arduino IDE uses [`bossac`](https://github.com/shumatech/BOSSA) to deploy to the Due.
+
+`bossac` (and likely other deployment tools) use an unstructured binary file as input, however `rustc` will generate an ELF file.   To generate the proper unstructured file, objcopy from GNU binutils can be used like so:
+
+`arm-none-eabi-objcopy -O binary {IN_FILE} {OUT_FILE}`
