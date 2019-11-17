@@ -7,7 +7,7 @@ This repository contains crates to support rust on the [Atmel SAM3X8E](https://w
 What is the SAM3X8E?
 ---
 
-The Atmel SAM3x8e is an ARM Cortex M3 based microcontroller.  It includes 512 kilobytes of flash memory, 100 kilobytes of SDRAM, and can be run at up to 84 MHz.  The SAM3X8E is most commonly found in the Arduino Due.
+The Atmel SAM3X8E is an ARM Cortex M3 based microcontroller.  It includes 512 kilobytes of flash memory, 100 kilobytes of SDRAM, and can be run at up to 84 MHz.  The SAM3X8E is most commonly found in the Arduino Due.
 
 What's included in the box?
 ---
@@ -33,10 +33,9 @@ There's no catch.  All code is available freely under the GNU Lesser GPL version
 How do I get started?
 ---
 
-The [`cortex-m-quickstart`](https://github.com/rust-embedded/cortex-m-quickstart) template is a good place to start.  For a SAM3X8E microcontroller, the correct architecture is `thumbv7m-none-eabi` as this is a Cortex M3 based MCU.  The linker script at the root of this crate should work.
+The examples can be built with `cargo`, e.g. `cargo build --examples`.
 
-Deployment is typically going to involve some board specific actions.  For instance the Arduino IDE uses [`bossac`](https://github.com/shumatech/BOSSA) to deploy to the Due.
+Deployment is typically going to involve some board specific actions.  For instance the Arduino IDE uses [`bossac`](https://github.com/shumatech/BOSSA) to deploy to the Due.  `bossac` (and likely other deployment tools) use an unstructured binary file as input, however `rustc` will generate an ELF file.   To generate the proper unstructured file, objcopy from GNU binutils can be used like so: `arm-none-eabi-objcopy -O binary {IN_FILE} {OUT_FILE}`
 
-`bossac` (and likely other deployment tools) use an unstructured binary file as input, however `rustc` will generate an ELF file.   To generate the proper unstructured file, objcopy from GNU binutils can be used like so:
+For building your own projects the [`cortex-m-quickstart`](https://github.com/rust-embedded/cortex-m-quickstart) template is a good place to start.  The SAM3X/SAM3A family are all Cortex M3 based so the correct architecture is `thumbv7m-none-eabi`.  The linker script at the root of this crate should work.
 
-`arm-none-eabi-objcopy -O binary {IN_FILE} {OUT_FILE}`
