@@ -56,3 +56,4 @@ pub mod rng;
 pub mod time;
 pub mod timer;
 pub mod pmc;
+pub mod watchdog;

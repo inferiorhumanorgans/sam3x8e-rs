@@ -1,5 +1,7 @@
 //! Time units
 
+use core::fmt;
+
 /// Bits per second
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Bps(pub u32);
@@ -16,6 +18,15 @@ pub struct KiloHertz(pub u32);
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct MegaHertz(pub u32);
 
+#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
+pub struct MicroSeconds(pub u32);
+
+impl fmt::Display for MicroSeconds {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} µs", self.0)
+    }
+}
+
 /// Extension trait that adds convenience methods to the `u32` type
 pub trait U32Ext {
     /// Wrap in `Bps`
@@ -29,6 +40,12 @@ pub trait U32Ext {
 
     /// Wrap in `MegaHertz`
     fn mhz(self) -> MegaHertz;
+
+    /// Wrap in `MicroSeconds`
+    fn us(self) -> MicroSeconds;
+
+    /// Wrap in `MicroSeconds`
+    fn ms(self) -> MicroSeconds;
 }
 
 impl U32Ext for u32 {
@@ -46,6 +63,30 @@ impl U32Ext for u32 {
 
     fn mhz(self) -> MegaHertz {
         MegaHertz(self)
+    }
+
+    fn ms(self) -> MicroSeconds {
+        MicroSeconds(self * 1_000)
+    }
+
+    fn us(self) -> MicroSeconds {
+        MicroSeconds(self)
+    }
+}
+
+impl Into<MicroSeconds> for Hertz {
+    fn into(self) -> MicroSeconds {
+        let freq = self.0;
+        assert!(freq != 0 && freq <= 1_000_000);
+        MicroSeconds(1_000_000 / freq)
+    }
+}
+
+impl Into<Hertz> for MicroSeconds {
+    fn into(self) -> Hertz {
+        let period = self.0;
+        assert!(period != 0 && period <= 1_000_000);
+        Hertz(1_000_000 / period)
     }
 }
 
